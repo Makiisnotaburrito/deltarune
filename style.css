@@ -1,118 +1,36 @@
-@font-face {
-  font-family: 'Deltarune';
-  src: url('font.otf') format('opentype');
+/* Save Management UI */
+.save-management {
+  position: fixed;
+  top: 10px;
+  left: 10px; /* Moved to left to avoid the mute button */
+  z-index: 99999;
+  display: flex;
+  flex-direction: column; /* Stacked vertically for a cleaner look */
+  gap: 8px;
 }
 
-body {
-  background: #000;
+.save-btn {
+  background: #222; /* Matches your mute button */
   color: #fff;
+  border: 2px solid #fff;
+  padding: 6px 12px;
   font-family: 'Deltarune', monospace;
-  display: grid;
-  place-items: center;
-  height: 100vh;
-  margin: 0;
-  font-size: 32px;
-  letter-spacing: 0.5px;
-}
-
-.stretched-text {
-  display: inline-block;
-  transform: scaleY(1.1); 
-  transform-origin: bottom; 
-}
-
-.menu {
-  width: min(90vw, 800px); 
-}
-
-a {
-  color: inherit !important;
-  text-decoration: none !important;
-  outline: none !important;
-  display: block;
-}
-
-.row {
-  display: grid;
-  grid-template-columns: 200px 1fr auto; 
-  align-items: center;
-  padding: 12px 0; 
-  gap: 16px; 
-  letter-spacing: 0.5px;
-}
-
-.disabled-row {
-  display: grid;
-  opacity: 0.7;
-  grid-template-columns: 200px 1fr auto; 
-  align-items: center;
-  padding: 12px 0; 
-  gap: 16px; 
-  letter-spacing: 0.5px;
-}
-
-.row > *,
-.title,
-.badge,
-.chapter {
-  display: inline-block;
-  transform: scaleY(1.1);
+  font-size: 18px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transform: scaleY(1.1); /* Matches your menu's stretched text style */
   transform-origin: bottom;
 }
 
-.row:hover .chapter,
-.selected .chapter,
-.selected .title,
-.row:hover .title {
-  color: #fefe00;
-}
-.row:hover img,
-.selected img {
-  filter: sepia(1) saturate(100);
+.save-btn:hover {
+  background: #fff;
+  color: #000;
 }
 
-.coming-soon {
-  opacity: 0.7;
-}
-
-.badge {
-  font-size: 24px; 
-  color: #ff9;
-  padding-left: 20px; 
-}
-
-.chapter {
-  text-align: left;
-}
-
-.title {
-  text-align: center;
-}
-.disabled-title {
-  text-align: center;
-  opacity: 0.7;
-}
-
-img {
-  width: 60px;
-  height: 50px;
-  image-rendering: pixelated;
-}
-
-.logo {
-  width: 700px; 
-  height: 200px;
-  object-fit: contain;
-  display: block;
-  margin: 0 auto; 
-}
-
+/* Adjusting your existing mute button for consistency */
 #mute {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  background-color: #222;
-  border: none;
-  padding: 8px 12px;
-  cursor: pointer;
+  font-family: 'Deltarune', monospace;
+  border: 2px solid #fff;
+  color: #fff;
+  font-size: 18px;
 }
