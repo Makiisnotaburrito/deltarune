@@ -1,39 +1,68 @@
 <script>
-        let gamestarted = false;
+    const audio = document.getElementById('drone');
+    const mute = document.getElementById('mute');
+    let gamestarted = false;
 
-        function loadChapter(chapter) {
-            const mainArea = document.getElementById('main-menu');
-            const saveUI = document.getElementById('save-ui');
-            
-            // Look for the specific folder for each chapter
-            fetch(`chapter${chapter}/index.html`)
-                .then(res => {
-                    if (!res.ok) throw new Error("Chapter file not found");
-                    return res.text();
-                })
-                .then(html => {
-                    gamestarted = true;
-                    
-                    // 1. Hide the main menu
-                    if(mainArea) mainArea.style.display = 'none';
-                    
-                    // 2. Create a container for the game content
-                    const gameContainer = document.createElement('div');
-                    gameContainer.id = 'game-runtime';
-                    gameContainer.innerHTML = html;
-                    document.body.appendChild(gameContainer);
-
-                    // 3. Show the Save UI
-                    if(saveUI) saveUI.style.display = 'flex';
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert("Error loading Chapter " + chapter + ". Check if the folder exists!");
-                });
+    // Standard mute toggle logic
+    mute.addEventListener('click', () => {
+        if (!gamestarted) {
+            audio.muted = !audio.muted;
+            mute.textContent = audio.muted ? '🔊' : '🔇';
         }
+    });
+
+    function loadChapter(chapter) {
+        gamestarted = true;
         
-        // Use a simple string for the alert to avoid "undefined"
-        function showSaveMessage() {
-            alert("Save functionality coming soon!");
+        // Stop the menu music
+        audio.pause();
+
+        // Create the game frame
+        const iframe = document.createElement('iframe');
+        
+        // IMPORTANT: We use a relative path so it works on your PC and Phone
+        iframe.src = `chapter${chapter}/index.html`;
+        
+        // Styling to make it fullscreen and clean
+        iframe.style.position = 'fixed';
+        iframe.style.top = '0';
+        iframe.style.left = '0';
+        iframe.style.width = '100vw';
+        iframe.style.height = '100vh';
+        iframe.style.border = 'none';
+        iframe.style.backgroundColor = 'black';
+        iframe.style.zIndex = '9999';
+        
+        // Clear the menu and launch
+        document.body.innerHTML = ''; 
+        document.body.appendChild(iframe);
+        
+        console.log(`Launching Chapter ${chapter} in isolated frame...`);
+    }
+
+    // Keyboard navigation logic
+    let selectedChapter = null;
+    document.addEventListener('keydown', function(event) {
+        if (!gamestarted) {
+            const rows = document.querySelectorAll('.row');
+            if (event.key === 'ArrowUp') {
+                if (selectedChapter === null || selectedChapter <= 0) selectedChapter = rows.length - 1;
+                else selectedChapter--;
+                updateSelection(rows);
+            } else if (event.key === 'ArrowDown') {
+                if (selectedChapter === null || selectedChapter >= rows.length - 1) selectedChapter = 0;
+                else selectedChapter++;
+                updateSelection(rows);
+            } else if (event.key === 'Enter' && selectedChapter !== null) {
+                loadChapter(selectedChapter + 1);
+            }
         }
-    </script>
+    });
+
+    function updateSelection(rows) {
+        rows.forEach((row, i) => {
+            row.classList.toggle('selected', i === selectedChapter);
+        });
+        new Audio('audios/snd_menumove.mp3').play();
+    }
+</script>
