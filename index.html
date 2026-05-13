@@ -1,77 +1,39 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Deltarune Web Port</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <!-- Navigation Menu -->
-    <div id="main-menu">
-        <div class="logo-container">
-            <img src="logo.png" alt="Logo" class="logo">
-        </div>
-        <div class="menu">
-            <a href="javascript:loadChapter(1)" class="row">
-                <span class="chapter">Chapter 1</span>
-                <span class="title">The Beginning</span>
-            </a>
-            <a href="javascript:loadChapter(2)" class="row">
-                <span class="chapter">Chapter 2</span>
-                <span class="title">A Cyber's World</span>
-            </a>
-            <a href="javascript:loadChapter(3)" class="row">
-                <span class="chapter">Chapter 3</span>
-                <span class="title">The TV Show</span>
-            </a>
-            <a href="javascript:loadChapter(4)" class="row">
-                <span class="chapter">Chapter 4</span>
-                <span class="title">The Church</span>
-            </a>
-        </div>
-    </div>
-
-    <!-- UI that appears once the game starts -->
-    <div id="save-ui" style="display: none;">
-        <button class="save-btn" onclick="alert('Save functionality coming soon!')">SAVE GAME</button>
-    </div>
-
-    <script>
+<script>
         let gamestarted = false;
 
         function loadChapter(chapter) {
             const mainArea = document.getElementById('main-menu');
             const saveUI = document.getElementById('save-ui');
             
+            // Look for the specific folder for each chapter
             fetch(`chapter${chapter}/index.html`)
-                .then(res => res.text())
+                .then(res => {
+                    if (!res.ok) throw new Error("Chapter file not found");
+                    return res.text();
+                })
                 .then(html => {
                     gamestarted = true;
                     
-                    // Hide the menu
+                    // 1. Hide the main menu
                     if(mainArea) mainArea.style.display = 'none';
                     
-                    // Create game container
+                    // 2. Create a container for the game content
                     const gameContainer = document.createElement('div');
+                    gameContainer.id = 'game-runtime';
                     gameContainer.innerHTML = html;
                     document.body.appendChild(gameContainer);
 
-                    // Execute scripts from the chapter
-                    gameContainer.querySelectorAll('script').forEach(oldScript => {
-                        const newScript = document.createElement('script');
-                        if (oldScript.src) {
-                            newScript.src = oldScript.src;
-                        } else {
-                            newScript.textContent = oldScript.textContent;
-                        }
-                        document.body.appendChild(newScript);
-                    });
-                    
-                    // Show Save UI
+                    // 3. Show the Save UI
                     if(saveUI) saveUI.style.display = 'flex';
                 })
-                .catch(err => alert("Error loading chapter: " + err));
+                .catch(err => {
+                    console.error(err);
+                    alert("Error loading Chapter " + chapter + ". Check if the folder exists!");
+                });
+        }
+        
+        // Use a simple string for the alert to avoid "undefined"
+        function showSaveMessage() {
+            alert("Save functionality coming soon!");
         }
     </script>
-</body>
-</html>
