@@ -1,32 +1,77 @@
-function loadChapter(chapter) {
-    const mainArea = document.getElementById('main-menu');
-    const saveUI = document.getElementById('save-ui');
-    
-    fetch(`chapter${chapter}/index.html`)
-        .then(res => res.text())
-        .then(html => {
-            gamestarted = true;
-            
-            // Hide the menu instead of wiping the whole document
-            if(mainArea) mainArea.style.display = 'none';
-            
-            // Create a container for the game
-            const gameContainer = document.createElement('div');
-            gameContainer.innerHTML = html;
-            document.body.appendChild(gameContainer);
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Deltarune Web Port</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation Menu -->
+    <div id="main-menu">
+        <div class="logo-container">
+            <img src="logo.png" alt="Logo" class="logo">
+        </div>
+        <div class="menu">
+            <a href="javascript:loadChapter(1)" class="row">
+                <span class="chapter">Chapter 1</span>
+                <span class="title">The Beginning</span>
+            </a>
+            <a href="javascript:loadChapter(2)" class="row">
+                <span class="chapter">Chapter 2</span>
+                <span class="title">A Cyber's World</span>
+            </a>
+            <a href="javascript:loadChapter(3)" class="row">
+                <span class="chapter">Chapter 3</span>
+                <span class="title">The TV Show</span>
+            </a>
+            <a href="javascript:loadChapter(4)" class="row">
+                <span class="chapter">Chapter 4</span>
+                <span class="title">The Church</span>
+            </a>
+        </div>
+    </div>
 
-            // Trigger the scripts inside the loaded chapter
-            gameContainer.querySelectorAll('script').forEach(oldScript => {
-                const newScript = document.createElement('script');
-                if (oldScript.src) {
-                    newScript.src = oldScript.src;
-                } else {
-                    newScript.textContent = oldScript.textContent;
-                }
-                document.body.appendChild(newScript);
-            });
+    <!-- UI that appears once the game starts -->
+    <div id="save-ui" style="display: none;">
+        <button class="save-btn" onclick="alert('Save functionality coming soon!')">SAVE GAME</button>
+    </div>
+
+    <script>
+        let gamestarted = false;
+
+        function loadChapter(chapter) {
+            const mainArea = document.getElementById('main-menu');
+            const saveUI = document.getElementById('save-ui');
             
-            // Ensure Save UI is visible
-            saveUI.style.display = 'flex';
-        });
-}
+            fetch(`chapter${chapter}/index.html`)
+                .then(res => res.text())
+                .then(html => {
+                    gamestarted = true;
+                    
+                    // Hide the menu
+                    if(mainArea) mainArea.style.display = 'none';
+                    
+                    // Create game container
+                    const gameContainer = document.createElement('div');
+                    gameContainer.innerHTML = html;
+                    document.body.appendChild(gameContainer);
+
+                    // Execute scripts from the chapter
+                    gameContainer.querySelectorAll('script').forEach(oldScript => {
+                        const newScript = document.createElement('script');
+                        if (oldScript.src) {
+                            newScript.src = oldScript.src;
+                        } else {
+                            newScript.textContent = oldScript.textContent;
+                        }
+                        document.body.appendChild(newScript);
+                    });
+                    
+                    // Show Save UI
+                    if(saveUI) saveUI.style.display = 'flex';
+                })
+                .catch(err => alert("Error loading chapter: " + err));
+        }
+    </script>
+</body>
+</html>
