@@ -5,22 +5,25 @@
   <meta charset="UTF-8">
   <link rel="stylesheet" href="style.css">
   <style>
-    /* Styling to match your existing menu */
+    /* Fixed positioning keeps buttons on top of the game canvas */
     .save-management {
-      margin-top: 20px;
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      z-index: 99999;
       display: flex;
-      justify-content: center;
       gap: 10px;
     }
     .save-btn {
       background: black;
       color: white;
       border: 2px solid white;
-      padding: 10px 20px;
-      font-family: inherit;
+      padding: 8px 15px;
+      font-family: sans-serif;
+      font-size: 12px;
       cursor: pointer;
       text-transform: uppercase;
-      transition: 0.2s;
+      box-shadow: 2px 2px 0px white;
     }
     .save-btn:hover {
       background: white;
@@ -29,58 +32,59 @@
   </style>
 </head>
 <body>
-  <div class="logo-container">
-    <img src="logo.png" alt="Logo" class="logo">
-  </div>
-  
-  <div class="menu">
-    <a href="javascript:loadChapter(1)" class="row">
-      <span class="chapter">Chapter 1</span>
-      <span class="title">The Beginning</span>
-      <img src="icons/1.png">
-    </a>
-    <a href="javascript:loadChapter(2)" class="row">
-      <span class="chapter">Chapter 2</span>
-      <span class="title">A Cyber's World</span>
-      <img src="icons/2.png">
-    </a>
-    <a href="javascript:loadChapter(3)" class="row">
-      <span class="chapter">Chapter 3</span>
-      <span class="title">Late Night</span>
-      <img src="icons/3.png">
-    </a>
-    <a href="javascript:loadChapter(4)" class="row">
-      <span class="chapter">Chapter 4</span>
-      <span class="title">Prophecy</span>
-      <img src="icons/4.png">
-    </a>
-    
-    <!-- Save Management Section -->
-    <div class="save-management">
-      <button class="save-btn" onclick="exportSave()">Export Save</button>
-      <button class="save-btn" onclick="importSave()">Import Save</button>
+  <div id="main-menu">
+    <div class="logo-container">
+      <img src="logo.png" alt="Logo" class="logo">
     </div>
+    
+    <div class="menu">
+      <a href="javascript:loadChapter(1)" class="row">
+        <span class="chapter">Chapter 1</span>
+        <span class="title">The Beginning</span>
+        <img src="icons/1.png">
+      </a>
+      <a href="javascript:loadChapter(2)" class="row">
+        <span class="chapter">Chapter 2</span>
+        <span class="title">A Cyber's World</span>
+        <img src="icons/2.png">
+      </a>
+      <a href="javascript:loadChapter(3)" class="row">
+        <span class="chapter">Chapter 3</span>
+        <span class="title">Late Night</span>
+        <img src="icons/3.png">
+      </a>
+      <a href="javascript:loadChapter(4)" class="row">
+        <span class="chapter">Chapter 4</span>
+        <span class="title">Prophecy</span>
+        <img src="icons/4.png">
+      </a>
+      <a href="javascript:alert('Chapter 5 coming soon!')" class="disabled-row">
+        <span class="chapter">Chapter 5</span>
+        <span class="disabled-title">--</span>
+        <img src="icons/0.png">
+      </a>
+      <a href="javascript:alert('Chapter 6 coming soon!')" class="disabled-row">
+        <span class="chapter">Chapter 6</span>
+        <span class="disabled-title">--</span>
+        <img src="icons/0.png">
+      </a>
+      <a href="javascript:alert('Chapter 7 coming soon!')" class="disabled-row">
+        <span class="chapter">Chapter 7</span>
+        <span class="disabled-title">--</span>
+        <img src="icons/0.png">
+      </a>
+      <a href="javascript:window.open('https://truffled.lol', '_blank')" class="row">
+        <span class="chapter"></span>
+        <span class="title">port by bog :o</span>
+        <span class="badge"></span>
+      </a>
+    </div>
+  </div>
 
-    <a href="javascript:alert('Chapter 5 coming soon!')" class="disabled-row">
-      <span class="chapter">Chapter 5</span>
-      <span class="disabled-title">--</span>
-      <img src="icons/0.png">
-    </a>
-    <a href="javascript:alert('Chapter 6 coming soon!')" class="disabled-row">
-      <span class="chapter">Chapter 6</span>
-      <span class="disabled-title">--</span>
-      <img src="icons/0.png">
-    </a>
-    <a href="javascript:alert('Chapter 7 coming soon!')" class="disabled-row">
-      <span class="chapter">Chapter 7</span>
-      <span class="disabled-title">--</span>
-      <img src="icons/0.png">
-    </a>
-    <a href="javascript:window.open('https://truffled.lol', '_blank')" class="row">
-      <span class="chapter"></span>
-      <span class="title">port by bog :o</span>
-      <span class="badge"></span>
-    </a>
+  <!-- This div is moved outside the menu so it can be re-injected -->
+  <div id="save-ui" class="save-management">
+    <button class="save-btn" onclick="exportSave()">Export Save</button>
+    <button class="save-btn" onclick="importSave()">Import Save</button>
   </div>
 
   <audio id="drone" controls loop autoplay hidden>
@@ -94,25 +98,31 @@
     const mute = document.getElementById('mute');
     let gamestarted = false;
   
+    function updateButton() {
+      if (!gamestarted) {
+        mute.textContent = audio.muted ? '🔊' : '🔇';
+      }
+    }
+
     mute.addEventListener('click', () => {
       if (!gamestarted) {
         audio.muted = !audio.muted;
         updateButton(); 
       }
     });
-  
-    function updateButton() {
-      if (!gamestarted) {
-        mute.textContent = audio.muted ? '🔊' : '🔇';
-      }
-    }
-  
-    updateButton();
 
     function loadChapter(chapter) {
+      const saveUI = document.getElementById('save-ui'); 
       fetch(`chapter${chapter}/index.html`).then(res => res.text()).then(html => {
         gamestarted = true;
+        
+        // Wipe the page
         document.documentElement.innerHTML = html;
+        
+        // Re-inject the save buttons into the new body
+        document.body.appendChild(saveUI);
+        
+        // Re-initialize scripts
         document.documentElement.querySelectorAll('script').forEach(oldScript => {
           const newScript = document.createElement('script');
           if (oldScript.src) {
@@ -125,8 +135,8 @@
       });
     }
 
-    // SAVE MANAGEMENT LOGIC
-    function exportSave() {
+    // DATABASE LOGIC (Based on educated guess from runner.js snippets)
+    async function exportSave() {
       const request = indexedDB.open("/_savedata");
       request.onsuccess = (event) => {
         const db = event.target.result;
@@ -144,11 +154,11 @@
               a.download = "filech1_0";
               a.click();
             } else {
-              alert("No save file found. Start the game and save first.");
+              alert("Save file 'filech1_0' not found. Make sure you saved in-game first.");
             }
           };
         } catch (e) {
-          alert("Error: Database structure mismatch or save not found.");
+          alert("Could not access save data. The game engine may not have initialized the database yet.");
         }
       };
     }
@@ -168,15 +178,18 @@
             const transaction = db.transaction(["FILE_DATA"], "readwrite");
             const objectStore = transaction.objectStore("FILE_DATA");
             objectStore.put({ contents: new Uint8Array(content), timestamp: Date.now() }, "/filech1_0");
-            alert("Save Imported! You can now launch Chapter 1.");
+            alert("Save Imported! Refresh or load a chapter to see changes.");
           };
         };
       };
       input.click();
     }
 
+    // Menu Navigation
     const menumoveaudio = new Audio('audios/snd_menumove.mp3');
     const menuselectaudio = new Audio('audios/snd_select.mp3');
+    let selectedChapter = null;
+
     document.querySelectorAll('.row').forEach(row => {
       row.addEventListener('mouseenter', () => {
         if (!gamestarted) {
@@ -186,37 +199,32 @@
           }
         }
       });
-      row.addEventListener('click', () => {
-        if (!gamestarted) {
-          menuselectaudio.play();
-        }
-      });
     });
 
-    let selectedChapter = null;
     document.addEventListener('keydown', function(event) {
       if (!gamestarted) {
+        const rows = document.querySelectorAll('.row');
         if (event.key === 'ArrowUp') {
-          if (selectedChapter === null) {
-            selectedChapter = 0;
-          } else {
-            document.querySelectorAll('.row')[selectedChapter].classList.remove("selected");
-            selectedChapter = (selectedChapter - 1 + document.querySelectorAll('.row').length) % document.querySelectorAll('.row').length;
+          if (selectedChapter === null) selectedChapter = 0;
+          else {
+            rows[selectedChapter].classList.remove("selected");
+            selectedChapter = (selectedChapter - 1 + rows.length) % rows.length;
           }
-          document.querySelectorAll('.row')[selectedChapter].classList.add("selected");
+          rows[selectedChapter].classList.add("selected");
           menumoveaudio.play();
         } else if (event.key === 'ArrowDown') {
-          if (selectedChapter === null) {
-            selectedChapter = 0;
-          } else {
-            document.querySelectorAll('.row')[selectedChapter].classList.remove("selected");
-            selectedChapter = (selectedChapter + 1) % document.querySelectorAll('.row').length;
+          if (selectedChapter === null) selectedChapter = 0;
+          else {
+            rows[selectedChapter].classList.remove("selected");
+            selectedChapter = (selectedChapter + 1) % rows.length;
           }
-          document.querySelectorAll('.row')[selectedChapter].classList.add("selected");
+          rows[selectedChapter].classList.add("selected");
           menumoveaudio.play();
         } else if (event.key === 'Enter' && selectedChapter !== null) {
           menuselectaudio.play();
-          loadChapter(selectedChapter + 1);
+          const target = rows[selectedChapter].getAttribute('href');
+          if (target.startsWith('javascript:')) eval(target.replace('javascript:', ''));
+          else window.location.href = target;
         }
       }
     });
