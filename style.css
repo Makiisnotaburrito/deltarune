@@ -1,36 +1,20 @@
-/* Save Management UI */
-.save-management {
-  position: fixed;
-  top: 10px;
-  left: 10px; /* Moved to left to avoid the mute button */
-  z-index: 99999;
-  display: flex;
-  flex-direction: column; /* Stacked vertically for a cleaner look */
-  gap: 8px;
+/* Ensure buttons are ALWAYS on top of the game canvas */
+#save-ui {
+    position: fixed !important;
+    top: 15px !important;
+    left: 15px !important;
+    z-index: 2147483647 !important; /* Maximum possible z-index */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .save-btn {
-  background: #222; /* Matches your mute button */
-  color: #fff;
-  border: 2px solid #fff;
-  padding: 6px 12px;
-  font-family: 'Deltarune', monospace;
-  font-size: 18px;
-  cursor: pointer;
-  text-transform: uppercase;
-  transform: scaleY(1.1); /* Matches your menu's stretched text style */
-  transform-origin: bottom;
-}
-
-.save-btn:hover {
-  background: #fff;
-  color: #000;
-}
-
-/* Adjusting your existing mute button for consistency */
-#mute {
-  font-family: 'Deltarune', monospace;
-  border: 2px solid #fff;
-  color: #fff;
-  font-size: 18px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #00ff00; /* Neon green so you can see it against the black game bg */
+    border: 2px solid #fff;
+    padding: 10px;
+    font-family: sans-serif;
+    font-weight: bold;
+    cursor: pointer;
 }
