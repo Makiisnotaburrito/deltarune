@@ -91,10 +91,11 @@
       // --- MAKI'S SAVE INJECTION (MAKI/NONBURRITO) ---
       const saveData = "TUFLSQ0KTk9OQlVSUklUTw0KDQoNCg0KDQoNCjENCjINCjMNCjExNjYNCjAgDQoxIA0KLTgzNSANCjEgDQoxDQoxIA0KMCANCjEwIA0KMiANCjAgDQowIA0KMCANCjAgDQowIA0KbmFuIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KOTAgDQo5MCANCjEwIA0KOTk5IA0KMCANCjAgDQo1IA0KNSANCjEgDQpuYW4gDQoyIA0KMCANCjAgDQoxIA0KMCANCjAgDQowIA0KMCANCjAgDQoyIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjEgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjcNCjANCjANCjANCjANCjANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjExMA";
 
-      try {
+      const injectSave = () => {
         const request = indexedDB.open("/idbfs", 21);
         request.onsuccess = function(event) {
           const db = event.target.result;
+          // Check if the game engine has created the storage folder yet
           if (db.objectStoreNames.contains("FILE_DATA")) {
             const transaction = db.transaction(["FILE_DATA"], "readwrite");
             const store = transaction.objectStore("FILE_DATA");
@@ -105,18 +106,25 @@
               bytes[i] = binaryStr.charCodeAt(i);
             }
 
+            // Force it into Slot 2
             store.put({ contents: bytes.buffer, timestamp: Date.now(), mode: 33206 }, "/filech1_1");
-            console.log("Master Save injected into Slot 2");
+            console.log("Master Save (MAKI) injected into Slot 2 successfully.");
+            clearInterval(injectionInterval);
+          } else {
+            console.log("Waiting for GameMaker to initialize IndexedDB...");
           }
         };
-      } catch (e) { console.log("DB injection failed."); }
-      // --- END SAVE INJECTION ---
+      };
 
+      // Start the retry loop
+      const injectionInterval = setInterval(injectSave, 500);
+
+      // Chapter Loading Logic
       const res = await fetch(`chapter${chapter}/index.html`);
       const html = await res.text();
       
       gamestarted = true;
-      audio.pause(); // Stop menu drone when game starts
+      if (audio) audio.pause();
       document.documentElement.innerHTML = html;
 
       document.querySelectorAll('script').forEach(oldScript => {
@@ -130,7 +138,7 @@
       });
     }
 
-    // Keyboard and Selection Logic
+    // Keyboard and Hover Logic
     document.addEventListener('keydown', function(event) {
       if (!gamestarted) {
         const rows = document.querySelectorAll('.row, .disabled-row');
@@ -155,14 +163,12 @@
           if (target.href.includes('javascript:loadChapter')) {
             loadChapter(selectedChapter + 1);
           } else {
-            // Trigger the alert or window.open in the href
             eval(target.href.replace('javascript:', ''));
           }
         }
       }
     });
 
-    // Hover sound logic
     document.querySelectorAll('.row, .disabled-row').forEach((row, index) => {
       row.addEventListener('mouseenter', () => {
         if (!gamestarted) {
