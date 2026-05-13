@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!-- Option 2: Remote Inspect Element for your Phone -->
   <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@huolala-tech/page-spy-browser"></script>
   <script>
-    window.$pageSpy = new PageSpy();alert("Makiwuzhere (if a admin is seeing this pwease don't block the website🥺");
-
+    window.$pageSpy = new PageSpy();
+    alert("Makiwuzhere (if a admin is seeing this pwease don't block the website🥺");
   </script>
   
   <base href="https://cdn.jsdelivr.net/gh/technonyte00/deltarune@main/">
   <meta charset="UTF-8">
   <link rel="stylesheet" href="style.css">
+  <title>Deltarune Web Port</title>
 </head>
 <body>
   <div class="logo-container">
@@ -59,16 +59,21 @@
       <span class="badge"></span>
     </a>
   </div>
+
   <audio id="drone" controls loop autoplay hidden>
     <source src="audios/AUDIO_DRONE.ogg" type="audio/ogg">
-    your slow ass browser doesnt support AUDIO?
   </audio>
   <button id="mute">🔊</button>
+
   <script>
     const audio = document.getElementById('drone');
     const mute = document.getElementById('mute');
     let gamestarted = false;
-  
+    let selectedChapter = null;
+
+    const menumoveaudio = new Audio('audios/snd_menumove.mp3');
+    const menuselectaudio = new Audio('audios/snd_select.mp3');
+
     mute.addEventListener('click', () => {
       if (!gamestarted) {
         audio.muted = !audio.muted;
@@ -77,91 +82,96 @@
     });
   
     function updateButton() {
-      if (!gamestarted) {
-        mute.textContent = audio.muted ? '🔊' : '🔇';
-      }
-    }
-  
-    updateButton();
-
-    function loadChapter(chapter) {
-      fetch(`chapter${chapter}/index.html`).then(res => res.text()).then(html => {
-        gamestarted = true;
-        document.documentElement.innerHTML = html;
-        document.documentElement.querySelectorAll('script').forEach(oldScript => {
-          const newScript = document.createElement('script');
-          if (oldScript.src) {
-            newScript.src = oldScript.src;
-          } else {
-            newScript.textContent = oldScript.textContent;
-          }
-          document.body.appendChild(newScript);
-        });
-      });
+      mute.textContent = audio.muted ? '🔇' : '🔊';
     }
 
-    const hoverSound = document.getElementById('hover-sound');
+    async function loadChapter(chapter) {
+      if (!gamestarted) menuselectaudio.play();
 
-    const menumoveaudio = new Audio('audios/snd_menumove.mp3');
-    const menuselectaudio = new Audio('audios/snd_select.mp3');
-    document.querySelectorAll('.row').forEach(row => {
-      row.addEventListener('mouseenter', () => {
-        if (!gamestarted) {
-          menumoveaudio.play();
-          if (selectedChapter) {
-            document.querySelectorAll('.row')[selectedChapter].classList.remove("selected");
+      // --- MAKI'S SAVE INJECTION (MAKI/NONBURRITO) ---
+      const saveData = "TUFLSQ0KTk9OQlVSUklUTw0KDQoNCg0KDQoNCjENCjINCjMNCjExNjYNCjAgDQoxIA0KLTgzNSANCjEgDQoxDQoxIA0KMCANCjEwIA0KMiANCjAgDQowIA0KMCANCjAgDQowIA0KbmFuIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KOTAgDQo5MCANCjEwIA0KOTk5IA0KMCANCjAgDQo1IA0KNSANCjEgDQpuYW4gDQoyIA0KMCANCjAgDQoxIA0KMCANCjAgDQowIA0KMCANCjAgDQoyIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjEgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjcNCjANCjANCjANCjANCjANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjExMA";
+
+      try {
+        const request = indexedDB.open("/idbfs", 21);
+        request.onsuccess = function(event) {
+          const db = event.target.result;
+          if (db.objectStoreNames.contains("FILE_DATA")) {
+            const transaction = db.transaction(["FILE_DATA"], "readwrite");
+            const store = transaction.objectStore("FILE_DATA");
+            
+            const binaryStr = atob(saveData);
+            const bytes = new Uint8Array(binaryStr.length);
+            for (let i = 0; i < binaryStr.length; i++) {
+              bytes[i] = binaryStr.charCodeAt(i);
+            }
+
+            store.put({ contents: bytes.buffer, timestamp: Date.now(), mode: 33206 }, "/filech1_1");
+            console.log("Master Save injected into Slot 2");
           }
-        }
-      });
-      row.addEventListener('click', () => {
-        if (!gamestarted) {
-          menuselectaudio.play();
-        }
-      });
-    });
+        };
+      } catch (e) { console.log("DB injection failed."); }
+      // --- END SAVE INJECTION ---
 
-    let selectedChapter = null;
+      const res = await fetch(`chapter${chapter}/index.html`);
+      const html = await res.text();
+      
+      gamestarted = true;
+      audio.pause(); // Stop menu drone when game starts
+      document.documentElement.innerHTML = html;
+
+      document.querySelectorAll('script').forEach(oldScript => {
+        const newScript = document.createElement('script');
+        if (oldScript.src) {
+          newScript.src = oldScript.src;
+        } else {
+          newScript.textContent = oldScript.textContent;
+        }
+        document.body.appendChild(newScript);
+      });
+    }
+
+    // Keyboard and Selection Logic
     document.addEventListener('keydown', function(event) {
       if (!gamestarted) {
-      if (event.key === 'ArrowUp') {
-        if (selectedChapter === null) {
-          selectedChapter = 0;
-          document.querySelectorAll('.row')[0].classList.add("selected");
-          menumoveaudio.play();
-        } else {
-          document.querySelectorAll('.row')[selectedChapter].classList.remove("selected");
-          selectedChapter--;
-          if (selectedChapter < 0) {
-            selectedChapter = document.querySelectorAll('.row').length - 1;
+        const rows = document.querySelectorAll('.row, .disabled-row');
+        if (event.key === 'ArrowUp') {
+          if (selectedChapter === null) selectedChapter = 0;
+          else {
+            rows[selectedChapter].classList.remove("selected");
+            selectedChapter = (selectedChapter - 1 + rows.length) % rows.length;
           }
-          document.querySelectorAll('.row')[selectedChapter].classList.add("selected");
+          rows[selectedChapter].classList.add("selected");
           menumoveaudio.play();
-        }
-      } else if (event.key === 'ArrowDown') {
-        if (selectedChapter === null) {
-          selectedChapter = 0;
-          document.querySelectorAll('.row')[0].classList.add("selected");
+        } else if (event.key === 'ArrowDown') {
+          if (selectedChapter === null) selectedChapter = 0;
+          else {
+            rows[selectedChapter].classList.remove("selected");
+            selectedChapter = (selectedChapter + 1) % rows.length;
+          }
+          rows[selectedChapter].classList.add("selected");
           menumoveaudio.play();
-        } else {
-          if (selectedChapter+1 >= document.querySelectorAll('.row').length) {
-            document.querySelectorAll('.row')[selectedChapter].classList.remove("selected");
-            selectedChapter = 0;
-            document.querySelectorAll('.row')[0].classList.add("selected");
-            menumoveaudio.play();
+        } else if (event.key === 'Enter' && selectedChapter !== null) {
+          const target = rows[selectedChapter];
+          if (target.href.includes('javascript:loadChapter')) {
+            loadChapter(selectedChapter + 1);
           } else {
-            document.querySelectorAll('.row')[selectedChapter].classList.remove("selected");
-            selectedChapter++;
-            document.querySelectorAll('.row')[selectedChapter].classList.add("selected");
-            menumoveaudio.play();
+            // Trigger the alert or window.open in the href
+            eval(target.href.replace('javascript:', ''));
           }
         }
-      } else if (event.key === 'Enter') {
-        if (selectedChapter !== null) {
-          window.location.href = document.querySelectorAll('.row')[selectedChapter].href;
-          menuselectaudio.play();
-        } 
       }
-      }
+    });
+
+    // Hover sound logic
+    document.querySelectorAll('.row, .disabled-row').forEach((row, index) => {
+      row.addEventListener('mouseenter', () => {
+        if (!gamestarted) {
+          if (selectedChapter !== null) document.querySelectorAll('.row, .disabled-row')[selectedChapter].classList.remove("selected");
+          selectedChapter = index;
+          row.classList.add("selected");
+          menumoveaudio.play();
+        }
+      });
     });
   </script>
 </body>
