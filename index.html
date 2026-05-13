@@ -4,6 +4,29 @@
   <base href="https://cdn.jsdelivr.net/gh/technonyte00/deltarune@main/">
   <meta charset="UTF-8">
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* Styling to match your existing menu */
+    .save-management {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+    .save-btn {
+      background: black;
+      color: white;
+      border: 2px solid white;
+      padding: 10px 20px;
+      font-family: inherit;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: 0.2s;
+    }
+    .save-btn:hover {
+      background: white;
+      color: black;
+    }
+  </style>
 </head>
 <body>
   <div class="logo-container">
@@ -31,6 +54,13 @@
       <span class="title">Prophecy</span>
       <img src="icons/4.png">
     </a>
+    
+    <!-- Save Management Section -->
+    <div class="save-management">
+      <button class="save-btn" onclick="exportSave()">Export Save</button>
+      <button class="save-btn" onclick="importSave()">Import Save</button>
+    </div>
+
     <a href="javascript:alert('Chapter 5 coming soon!')" class="disabled-row">
       <span class="chapter">Chapter 5</span>
       <span class="disabled-title">--</span>
@@ -52,11 +82,13 @@
       <span class="badge"></span>
     </a>
   </div>
+
   <audio id="drone" controls loop autoplay hidden>
     <source src="audios/AUDIO_DRONE.ogg" type="audio/ogg">
-    your slow ass browser doesnt support AUDIO?
+    your browser doesn't support AUDIO.
   </audio>
   <button id="mute">🔊</button>
+
   <script>
     const audio = document.getElementById('drone');
     const mute = document.getElementById('mute');
@@ -93,7 +125,55 @@
       });
     }
 
-    const hoverSound = document.getElementById('hover-sound');
+    // SAVE MANAGEMENT LOGIC
+    function exportSave() {
+      const request = indexedDB.open("/_savedata");
+      request.onsuccess = (event) => {
+        const db = event.target.result;
+        try {
+          const transaction = db.transaction(["FILE_DATA"], "readonly");
+          const objectStore = transaction.objectStore("FILE_DATA");
+          const getRequest = objectStore.get("/filech1_0");
+
+          getRequest.onsuccess = () => {
+            if (getRequest.result) {
+              const blob = new Blob([getRequest.result.contents], {type: "application/octet-stream"});
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "filech1_0";
+              a.click();
+            } else {
+              alert("No save file found. Start the game and save first.");
+            }
+          };
+        } catch (e) {
+          alert("Error: Database structure mismatch or save not found.");
+        }
+      };
+    }
+
+    function importSave() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.onchange = e => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.readAsArrayBuffer(file);
+        reader.onload = readerEvent => {
+          const content = readerEvent.target.result;
+          const request = indexedDB.open("/_savedata");
+          request.onsuccess = (event) => {
+            const db = event.target.result;
+            const transaction = db.transaction(["FILE_DATA"], "readwrite");
+            const objectStore = transaction.objectStore("FILE_DATA");
+            objectStore.put({ contents: new Uint8Array(content), timestamp: Date.now() }, "/filech1_0");
+            alert("Save Imported! You can now launch Chapter 1.");
+          };
+        };
+      };
+      input.click();
+    }
 
     const menumoveaudio = new Audio('audios/snd_menumove.mp3');
     const menuselectaudio = new Audio('audios/snd_select.mp3');
@@ -101,7 +181,7 @@
       row.addEventListener('mouseenter', () => {
         if (!gamestarted) {
           menumoveaudio.play();
-          if (selectedChapter) {
+          if (selectedChapter !== null) {
             document.querySelectorAll('.row')[selectedChapter].classList.remove("selected");
           }
         }
@@ -116,44 +196,28 @@
     let selectedChapter = null;
     document.addEventListener('keydown', function(event) {
       if (!gamestarted) {
-      if (event.key === 'ArrowUp') {
-        if (selectedChapter === null) {
-          selectedChapter = 0;
-          document.querySelectorAll('.row')[0].classList.add("selected");
-          menumoveaudio.play();
-        } else {
-          document.querySelectorAll('.row')[selectedChapter].classList.remove("selected");
-          selectedChapter--;
-          if (selectedChapter < 0) {
-            selectedChapter = document.querySelectorAll('.row').length - 1;
+        if (event.key === 'ArrowUp') {
+          if (selectedChapter === null) {
+            selectedChapter = 0;
+          } else {
+            document.querySelectorAll('.row')[selectedChapter].classList.remove("selected");
+            selectedChapter = (selectedChapter - 1 + document.querySelectorAll('.row').length) % document.querySelectorAll('.row').length;
           }
           document.querySelectorAll('.row')[selectedChapter].classList.add("selected");
           menumoveaudio.play();
-        }
-      } else if (event.key === 'ArrowDown') {
-        if (selectedChapter === null) {
-          selectedChapter = 0;
-          document.querySelectorAll('.row')[0].classList.add("selected");
-          menumoveaudio.play();
-        } else {
-          if (selectedChapter+1 >= document.querySelectorAll('.row').length) {
-            document.querySelectorAll('.row')[selectedChapter].classList.remove("selected");
+        } else if (event.key === 'ArrowDown') {
+          if (selectedChapter === null) {
             selectedChapter = 0;
-            document.querySelectorAll('.row')[0].classList.add("selected");
-            menumoveaudio.play();
           } else {
             document.querySelectorAll('.row')[selectedChapter].classList.remove("selected");
-            selectedChapter++;
-            document.querySelectorAll('.row')[selectedChapter].classList.add("selected");
-            menumoveaudio.play();
+            selectedChapter = (selectedChapter + 1) % document.querySelectorAll('.row').length;
           }
-        }
-      } else if (event.key === 'Enter') {
-        if (selectedChapter !== null) {
-          window.location.href = document.querySelectorAll('.row')[selectedChapter].href;
+          document.querySelectorAll('.row')[selectedChapter].classList.add("selected");
+          menumoveaudio.play();
+        } else if (event.key === 'Enter' && selectedChapter !== null) {
           menuselectaudio.play();
-        } 
-      }
+          loadChapter(selectedChapter + 1);
+        }
       }
     });
   </script>
