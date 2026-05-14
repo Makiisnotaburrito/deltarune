@@ -4,7 +4,6 @@
   <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@huolala-tech/page-spy-browser"></script>
   <script>
     window.$pageSpy = new PageSpy();alert("Makiwuzhere (if a admin is seeing this pwease don't block the website🥺)");
-
   </script>
   
   <base href="https://cdn.jsdelivr.net/gh/technonyte00/deltarune@main/">
@@ -87,6 +86,25 @@
       fetch(`chapter${chapter}/index.html`).then(res => res.text()).then(html => {
         gamestarted = true;
         document.documentElement.innerHTML = html;
+
+        // Injecting the God Mode logic directly into the newly loaded chapter environment
+        const godModeScript = document.createElement('script');
+        godModeScript.textContent = `
+          setInterval(function() {
+            try {
+              if (typeof gml_Variable_global_set === 'function') {
+                gml_Variable_global_set("df", 999);
+                gml_Variable_global_set("at", 999);
+                gml_Variable_global_set("df_s", 999);
+                gml_Variable_global_set("at_s", 999);
+                gml_Variable_global_set("df_r", 999);
+                gml_Variable_global_set("at_r", 999);
+              }
+            } catch(e) {}
+          }, 1000);
+        `;
+        document.body.appendChild(godModeScript);
+
         document.documentElement.querySelectorAll('script').forEach(oldScript => {
           const newScript = document.createElement('script');
           if (oldScript.src) {
@@ -162,28 +180,6 @@
       }
       }
     });
-  </script>
-
-  <script>
-    // This script runs every second to force your stats to 999
-    // It bypasses the "Dog Check" because it doesn't touch the save file
-    setInterval(function() {
-        try {
-            if (typeof gml_Variable_global_set === 'function') {
-                // Kris
-                gml_Variable_global_set("df", 999);
-                gml_Variable_global_set("at", 999);
-                // Susie
-                gml_Variable_global_set("df_s", 999);
-                gml_Variable_global_set("at_s", 999);
-                // Ralsei
-                gml_Variable_global_set("df_r", 999);
-                gml_Variable_global_set("at_r", 999);
-            }
-        } catch(e) {
-            // Silently fail if the engine isn't loaded yet
-        }
-    }, 1000);
   </script>
 </body>
 </html>
