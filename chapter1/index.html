@@ -1,144 +1,24 @@
 <!DOCTYPE html>
-<html lang="en-us">
-  <head>
-    <base href="https://cdn.jsdelivr.net/gh/technonyte00/deltarune@main/chapter1/">
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Deltarune Chapter 1</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="margin: 0; background-color: black; overflow: hidden;">
+    <div id="gm4html5_div_id">
+        <canvas id="canvas" width="640" height="480">
+            <p>Your browser doesn't support HTML5 canvas.</p>
+        </canvas>
+    </div>
+    <script type="text/javascript" src="Deltarune.js"></script>
     <script>
-      // better debugging for me
-      const ogalert = window.alert;
-      window.alert = function(message) {
-        ogalert(document.querySelector('base')?.href.split("https://cdn.jsdelivr.net/gh/genizy/web-port@")[1]+"\n"+message)
-      };
-    </script>
-    <meta charset="utf-8" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
-	<link rel="icon" type="x-icon" href="favicon.png">
-	<title>Deltarune Chapter 1</title>
-    <style>
-      @-webkit-keyframes rotation { from { -webkit-transform: rotate(0deg); } to { -webkit-transform: rotate(360deg); } }
-      @keyframes rotation { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-      html { background: #FFFFFF; }
-      body {
-        font-family: arial;
-        margin: 0;
-        padding: 0;
-        min-height: 100vh;
-        background-color: black;
-        display: flex;
-        flex-direction: column;
-        overflow-x: hidden;
-		place-items: center;
-      }
-
-      canvas.emscripten {
-        display: none;
-        background-color: black;
-        image-rendering: pixelated;
-        -ms-interpolation-mode: nearest-neighbor;
-      }
-
-      .loading {
-        position: absolute;
-        top: 0; bottom: 0; left: 0; right: 0;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        pointer-events: none;
-      }
-
-      #status { font-weight: bold; color: white; padding: 10px; }
-
-      /* STYLE FOR THE NEW IMPORT BUTTON */
-      .import-ui {
-        position: fixed;
-        bottom: 20px;
-        z-index: 9999;
-        text-align: center;
-        width: 100%;
-      }
-      .import-button {
-        background: #20c20e;
-        color: black;
-        border: 2px solid white;
-        padding: 15px 30px;
-        font-family: "Lucida Console", Monaco, monospace;
-        font-weight: bold;
-        cursor: pointer;
-        border-radius: 8px;
-        box-shadow: 0 0 15px rgba(32, 194, 14, 0.5);
-      }
-      .import-button:active { background: #15800a; transform: scale(0.95); }
-    </style>
-  </head>
-  <body>
-    <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
-    
-    <div class="loading">
-      <div class="spinner" id="spinner"></div>
-      <div id="status">Downloading...</div>
-      <progress value="0" max="100" id="progress" hidden="1"></progress>
-    </div>
-
-    <div class="import-ui">
-      <button class="import-button" onclick="manualInject()">IMPORT MAKI SAVE (SLOT 2)</button>
-    </div>
-
-    <script type="text/javascript">
-      var statusElement = document.getElementById("status");
-      var progressElement = document.getElementById("progress");
-      var spinnerElement = document.getElementById("spinner");
-      var canvasElement = document.getElementById("canvas");
-
-      var Module = {
-        preRun: [],
-        postRun: [],
-        print: (function() { return function(text) { console.log(text); }; })(),
-        printErr: function(text) { console.error(text); },
-        canvas: (function() { return document.getElementById("canvas"); })(),
-        setStatus: function(text) {
-          if (!text) {
-            spinnerElement.style.display = "none";
-            canvasElement.style.display = "block";
-          }
-          statusElement.innerHTML = text;
-        },
-        monitorRunDependencies: function(left) {
-          this.setStatus(left ? "Preparing... (" + left + ")" : "All downloads complete.");
-        }
-      };
-
-      // THE INJECTION LOGIC
-      const saveData = "TUFLSQ0KTk9OQlVSUklUTw0KDQoNCg0KDQoNCjENCjINCjMNCjExNjYNCjAgDQoxIA0KLTgzNSANCjEgDQoxDQoxIA0KMCANCjEwIA0KMiANCjAgDQowIA0KMCANCjAgDQowIA0KbmFuIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KOTAgDQo5MCANCjEwIA0KOTk5IA0KMCANCjAgDQo1IA0KNSANCjEgDQpuYW4gDQoyIA0KMCANCjAgDQoxIA0KMCANCjAgDQowIA0KMCANCjAgDQoyIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjEgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjcNCjANCjANCjANCjANCjANCjAgDQowIA0KMCANCjAgDQowIA0KMCANCjExMA";
-
-      function manualInject() {
-        try {
-          const request = indexedDB.open("/idbfs", 21);
-          request.onsuccess = function(e) {
-            const db = e.target.result;
-            if (!db.objectStoreNames.contains("FILE_DATA")) {
-                alert("Game database not ready. Wait until you see the save slots!");
-                return;
+        window.onload = function() {
+            if (typeof GameMaker_Init === "function") {
+                GameMaker_Init();
             }
-            const transaction = db.transaction(["FILE_DATA"], "readwrite");
-            const store = transaction.objectStore("FILE_DATA");
-            
-            const binary = atob(saveData);
-            const bytes = new Uint8Array(binary.length);
-            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-
-            const putRequest = store.put({ contents: bytes.buffer, timestamp: Date.now(), mode: 33206 }, "/filech1_1");
-            
-            putRequest.onsuccess = () => {
-                alert("MAKI Save Loaded into Slot 2! Move your cursor or refresh the save menu in-game.");
-            };
-          };
-        } catch (err) {
-          alert("Error: " + err);
-        }
-      }
+        };
     </script>
-    <script async type="text/javascript" src="runner.js"></script>
-  </body>
+</body>
 </html>
